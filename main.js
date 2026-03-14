@@ -1,24 +1,31 @@
 class StarBattlePuzzleSolver {
     constructor (gridSize) {
-        this.grid = gridSize;
-        const grid = Array.from({length : gridSize}, () => Array.from({length : gridSize}, () => ({status : null, region : null})));
-        const regions = [];
-        const answerGrid = [];
+        this.starCount = 2;
+        this.gridSize = gridSize;
+        this.grid = Array.from({length : gridSize}, () => Array.from({length : gridSize}, () => ({status : null, region : null})));
+        this.regions = [];
+        this.answerGrid = [];
+    }
+
+    isInGrid (x, y) {
+        if (x < 0 || x >= this.gridSize) return false;
+        if (y < 0 || y >= this.gridSize) return false;
+        return true;
     }
 
     getMinRegion (givenGrid) {
         let minCount = Infinity;
         let minRegion = [];
-        for (const region in regions) {
+        for (const region of this.regions) {
             let nullCount = 0;
-            for (const pos in region) {
+            for (const pos of region) {
                 if (givenGrid[pos.y][pos.x].status === null) {
                     nullCount++;
                 }
             }
-            if (count > 0 && count < minCount) {
-                minCount = count;
-                minRegion = pos;
+            if (nullCount > 0 && nullCount < minCount) {
+                minCount = nullCount;
+                minRegion = region;
             }
         }
         return minRegion;
@@ -27,40 +34,36 @@ class StarBattlePuzzleSolver {
     placeStar (x, y, givenGrid) {
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
-                givenGrid[x + i][x + j].status = false;
+                if (this.isInGrid(x + j, y + i)) givenGrid[y + i][x + j].status = false;
             }
         }
         givenGrid[y][x].status = true;
         let count = 0;
-        for (let i = 0; i < gridSize; i++) {
+        for (let i = 0; i < this.gridSize; i++) {
             if (givenGrid[y][i].status === true) count++;
         }
-        if (count === 2) {
+        if (count === this.starCount) {
             for (let i = 0; i < gridSize; i++) {
                 if (givenGrid[y][i].status === null) givenGrid[y][i].status = false;
             }
         }
         count = 0;
-        for (let i = 0; i < gridSize; i++) {
+        for (let i = 0; i < this.gridSize; i++) {
             if (givenGrid[i][x].status === true) count++;
         }
-        if (count === 2) {
+        if (count === this.starCount) {
             for (let i = 0; i < gridSize; i++) {
                 if (givenGrid[i][x].status === null) givenGrid[i][x].status = false;
             }
         }
+        const targetRegion = this.regions[givenGrid[y][x].region];
         count = 0;
-        const sameRegionTrue = [];
-        const sameRegionNull = [];
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j < gridSize; j++) {
-                if (givenGrid[i][j].region === givenGrid[y][x].region && givenGrid[i][j].status === true) sameRegionTrue.push({x : j, y : i});
-                if (givenGrid[i][j].region === givenGrid[y][x].region && givenGrid[i][j].status === null) sameRegionNull.push({x : j, y : i});
-            }
+        for (const pos of targetRegion) {
+            if (givenGrid[pos.y][pos.x].status === true) count++;
         }
-        if (sameRegionTrue.length === 2) {
-            for (const pos of sameRegionNull) {
-                givenGrid[pos.y][pos.x] = false;
+        if (count === starCount) {
+            for (const pos of targetRegion) {
+                if (givenGrid[pos.y][pos.x].status === null) givenGrid[pos.y][pos.x].status = false;
             }
         }
     }
