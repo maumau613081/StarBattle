@@ -68,3 +68,33 @@ class StarBattlePuzzleSolver {
         }
     }
 }
+
+class UIManager {
+    constructor (gridSize) {
+        this.canvas = document.getElementById(`puzzleCanvas`);
+        this.ctx = this.canvas.getContext('2d');
+        this.gridSize = gridSize;
+        this.cellSize = this.canvas.width / gridSize
+    }
+
+    drawCanvas () {
+        const {ctx, canvas, gridSize, cellSize} = this;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.beginPath()
+        ctx.strokeStyle = "#b1b1b1";
+        ctx.lineWidth = 1;
+        for (let i = 1; i < gridSize; i++) {
+            ctx.moveTo(cellSize * i, 0);
+            ctx.lineTo(cellSize * i, canvas.height);
+            ctx.moveTo(0, cellSize * i);
+            ctx.lineTo(canvas.height, cellSize * i);
+        }
+        ctx.stroke();
+    }
+}
