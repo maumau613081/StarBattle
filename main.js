@@ -70,22 +70,23 @@ class StarBattlePuzzleSolver {
 }
 
 class UIManager {
-    constructor (gridSize) {
+    constructor (grid) {
+        this.grid = grid;
+        this.gridSize = grid.length;
         this.canvas = document.getElementById(`puzzleCanvas`);
         this.ctx = this.canvas.getContext('2d');
         this.gridSize = gridSize;
         this.cellSize = this.canvas.width / gridSize
+        this.regions = [];
     }
 
     drawCanvas () {
         const {ctx, canvas, gridSize, cellSize} = this;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         ctx.beginPath();
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
-        
         ctx.beginPath()
         ctx.strokeStyle = "#b1b1b1";
         ctx.lineWidth = 1;
@@ -96,5 +97,65 @@ class UIManager {
             ctx.lineTo(canvas.height, cellSize * i);
         }
         ctx.stroke();
+    }
+
+    drawBoard () {
+        const {ctx, gridSize, cellSize, grid} = this;
+        ctx.beginPath();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        for (let i = 0; i < gridSize - 1; i++) {
+            for (let j = 0; j < gridSize - 1; j++) {
+                if (grid[i][j].region !== grid[i][j + 1].region) {
+                    ctx.moveTo((j + 1) * cellSize, i * cellSize);
+                    ctx.lineTo((j + 1) * cellSize, (i + 1) * cellSize);
+                }
+                if (grid[i][j].region !== grid[i + 1][j].region) {
+                    ctx.moveTo(j * cellSize, (i + 1) * cellSize);
+                    ctx.lineTo((j + 1) * cellSize, (i + 1) * cellSize);
+                }
+            }
+        }
+        ctx.stroke();
+    }
+
+    drawMark (x, y, mark) {
+        const {ctx, cellSize} = this;
+        ctx.beginPath();
+        ctx.lineWidth = 0.5;
+        if (mark === "star") {
+            ctx.strokeStyle = "#ff3030"
+            ctx.moveTo((x + 0.5) * cellSize, (y + 0.125) * cellSize);
+            for (let i = 1; i <= 5; i++) {
+                ctx.lineTo((x + 0.5 + Math.cos(Math.PI * 4 * i / 5 + Math.PI / 2)  * 3 / 8) * cellSize, (y + 0.5 + Math.sin(Math.PI * 4 * i / 5 + Math.PI / 2) * 3 / 8) * cellSize);
+            }
+            ctx.closePath();
+        } else if (mark === "check") {
+            ctx.strokeStyle = "#606060";
+            ctx.moveTo((x + 0.125) * cellSize, (y + 0.125) * cellSize);
+            ctx.lineTo((x + 0.875) * cellSize, (y + 0.875) * cellSize);
+            ctx.moveTo((x + 0.125) * cellSize, (y + 0.875) * cellSize);
+            ctx.lineTo((x + 0.875) * cellSize, (y + 0.125) * cellSize);
+        }
+        ctx.stroke();
+    }
+
+    getColorAt (x, y) {
+        const imageData = this.ctx.getImaneData(x,y,1,1);
+        const data = imageData.data;
+        return `rgb(${data[0]},${data[1]},${data[2]})`;
+    }
+
+    getRegion () {
+        const colors = [];
+        for (const row of grid) {
+            for (const pos of row) {
+                const color = this.getColorAt(pos.x * cellSize + 1, pos.y * cellSize + 1);
+                if (color !== "rgb(0,0,0") {
+                    if (!colors)
+                    this.regions.push({color : {pos.x, pos.y}})
+                }
+            }
+        }
     }
 }
